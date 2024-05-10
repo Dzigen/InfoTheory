@@ -1,0 +1,20 @@
+{
+ "train_params": {
+  "task_name": "log1_vqvae",
+  "model": "vq_vae",
+  "batch_size": 64,
+  "epochs": 100,
+  "lr": 0.005,
+  "save_model": true,
+  "base_dir": "./experiments",
+  "num_workers": 2,
+  "device": "cuda"
+ },
+ "vq_vae": {
+  "reconstruction_loss_weight": 5,
+  "codebook_loss_weight": 1,
+  "commitment_loss_weight": 0.2,
+  "codebook_size": 32,
+  "latent_dim": 8
+ }
+}

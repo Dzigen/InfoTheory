@@ -1,0 +1,41 @@
+task_name: 'log4'
+
+batch_size: 64
+epochs: 200 # fixed
+lr: 0.01
+weights_init: 'xavier_normal' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
+act_fn: 'silu' # 'relu' | 'leaky' | 'gelu' | 'silu'
+use_batchnorm: False
+use_residuals: True
+residual_nlayers: 2
+
+reconstruction_loss_weight : 14.0
+codebook_loss_weight : 0.8
+commitment_loss_weight : 2.08
+
+codebook_size : 85
+latent_dim: 16 # fixed
+
+b_quantization: 2 
+
+save_model: False
+eval_images_to_plot: 5 # fixed
+base_dir: './experiments' # fixed
+num_workers: 4
+device: 'cuda'
+
+enc:
+  conv2d:
+    in: [3,128,32]
+    out: [128,32,16]
+    ks: [7,5,3]
+    s: [2,2,2]
+    p: [3,2,1]
+dec:
+  transconv2d:
+    in: [16,32,128]
+    out: [32,128,3]
+    ks: [3,5,7]
+    s: [2,2,2]
+    p: [1,2,3]
+    out_p: [1,1,1]
