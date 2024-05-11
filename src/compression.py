@@ -1,70 +1,80 @@
 import os
 import torch
+import numpy as np
+from PIL import Image
 
 from src.architectures.VQVAE import VQVAE
+from src.architectures.VAE import VAE
 from src.codec.EntropyCodec import *
 from src.utils import REFORM
-import numpy as np
-
+from src.metrics import PSNR
 
 class Compressor:
     """Реализация алгоритма сжатия/декомпрессии изображений
     """
 
-    def __init__(self, ae_model_path, config, save_dir) -> None:
+    def __init__(self, ae_model_path, config, arch, save_dir) -> None:
         self.sc = ScalarQuantizer(config['b_quantization'])
         self.ac = ArithmeticCoder(save_dir, feature_size=[config['latent_dim']]*3)
 
-        self.model = VQVAE(config).to(config['device'])
+        if config['model_type'] == 'vqvae':
+            self.model = VQVAE(config, arch).to(config['device'])
+        elif config['model_type'] == 'vae':
+            self.model = VAE(config, arch).to(config['device'])
+        
         self.model.load_state_dict(torch.load(ae_model_path))
         self.model.eval()
         self.config = config
 
     def compress(self, x, name):
-        print("Compression Start")
-        print("1. x: ", x.shape)
+        #print("Compression Start")
+        #print("1. x: ", x.shape)
 
         # енкодер-часть автоенкодера
         x = x.to(self.config['device'])
         encoder_out = self.model.encoder(x)
-        print("2. encoder_out: ", encoder_out.shape)
+        #print("2. encoder_out: ", encoder_out.shape)
 
-        # vq-часть автоенкодера
-        quant_output, _, _ = self.model.quantizer(encoder_out)
-        print("3. quant_output: ", quant_output.shape)
+        
+        if self.config['model_type'] == 'vqvae':
+            # vq-часть автоенкодера 
+            quant_output, _, _ = self.model.quantizer(encoder_out)
+            #print("3. quant_output: ", quant_output.shape)
+        else:
+            quant_output = encoder_out
 
         # скалярное кодирование
         quant_output = quant_output[0].cpu().detach().numpy()  
         sc_x, max_x = self.sc.encode(quant_output)
-        print("4. sc_x: ", sc_x.shape)
+        #print("4. sc_x: ", sc_x.shape)
 
         # арифметическое кодирование
         save_file, bpp = self.ac.code(sc_x, name)
-        print('5. save_file: ', save_file)
+        #print('5. save_file: ', save_file)
         
         return save_file, max_x, bpp
 
     def decompress(self, name, max_x):
-        print("Decompression Start")
-        print("1. name: ", name)
+        #print("Decompression Start")
+        #print("1. name: ", name)
 
         # арифметическое декодирование
         decoded_x = self.ac.decode(name)
-        print("2. decoded_x: ", decoded_x.shape)
+        #print("2. decoded_x: ", decoded_x.shape)
 
         # скалярное  декодирование
         dequant_x = self.sc.decode(decoded_x, max_x)
-        print("3. dequant_x: ", dequant_x.shape)
+        #print("3. dequant_x: ", dequant_x.shape)
 
         dequant_x = torch.unsqueeze(torch.tensor(dequant_x), 0)
         dequant_x = dequant_x.to(self.config['device'])
-        print("4. dequant_x (unsqueeze): ", dequant_x.shape)
+        #print("4. dequant_x (unsqueeze): ", dequant_x.shape)
 
         # decoder-часть автоенкодера
         decoder_out = self.model.decoder(dequant_x)
-        print("5. decoder_out: ", decoder_out.shape)
+        #print("5. decoder_out: ", decoder_out.shape)
         decoder_out = torch.squeeze(decoder_out, 0)
-        print("6. decoder_out(squeeze): ", decoder_out.shape)
+        #print("6. decoder_out(squeeze): ", decoder_out.shape)
 
         return REFORM(decoder_out)
 
@@ -154,3 +164,31 @@ class ArithmeticCoder:
         HiddenLayersDecoder(declayers, size_w, size_h, size_z, bitstream, FrameOffset)
         
         return declayers
+
+
+#This function is searching for the JPEG quality factor (QF)
+#which provides neares compression to TargetBPP
+def JPEGRDSingleImage(image,TargetBPP):
+    width, height = image.size
+    realbpp, realpsnr, realQ = 0, 0, 0
+    save_file = 'test.jpeg'
+
+    for Q in range(101):
+        image.save(save_file, "JPEG", quality=Q)
+        image_dec = Image.open(save_file)
+        bytesize = os.path.getsize(save_file)
+        bpp = bytesize*8/(width*height)
+        psnr = PSNR(image, image_dec, mode=None)
+
+        if abs(realbpp-TargetBPP)>=abs(bpp-TargetBPP):
+            realQ = Q
+    
+    #
+    image.save(save_file, "JPEG", quality=realQ)
+    image_dec = Image.open(save_file)
+    bytesize = os.path.getsize(save_file)
+    realbpp = bytesize*8/(width*height)
+    realpsnr = PSNR(image, image_dec, mode=None)
+    os.remove(save_file)
+
+    return image_dec, realQ, realbpp, realpsnr

@@ -1,41 +1,28 @@
-task_name: 'log4'
+task_name: ''
 
-batch_size: 64
-epochs: 200 # fixed
-lr: 0.01
-weights_init: 'xavier_normal' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
-act_fn: 'silu' # 'relu' | 'leaky' | 'gelu' | 'silu'
-use_batchnorm: False
+batch_size: 4
+epochs: 100 # fixed
+lr: 0.005
+weights_init: 'kaiming_uniform' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
+act_fn: 'leaky' # 'relu' | 'leaky' | 'gelu' | 'silu' | 'tanh'
+use_batchnorm: True
 use_residuals: True
-residual_nlayers: 2
-
-reconstruction_loss_weight : 14.0
-codebook_loss_weight : 0.8
-commitment_loss_weight : 2.08
-
-codebook_size : 85
+use_maxpool: False # false
+residual_nlayers: 1
+b_quantization: 2
+reconstruction_loss_weight : 1.0
 latent_dim: 16 # fixed
+model_type: 'vae' # fixed
+add_noise: True # fixed
 
-b_quantization: 2 
+codebook_loss_weight : 3.2
+commitment_loss_weight : 12.37
+codebook_size : 70
 
-save_model: False
+save_model: False # fixed
 eval_images_to_plot: 5 # fixed
 base_dir: './experiments' # fixed
-num_workers: 4
+num_workers: 2 # fixed
+compute_metrics: False # fixed
 device: 'cuda'
-
-enc:
-  conv2d:
-    in: [3,128,32]
-    out: [128,32,16]
-    ks: [7,5,3]
-    s: [2,2,2]
-    p: [3,2,1]
-dec:
-  transconv2d:
-    in: [16,32,128]
-    out: [32,128,3]
-    ks: [3,5,7]
-    s: [2,2,2]
-    p: [1,2,3]
-    out_p: [1,1,1]
+root_dir: '.' # fixed

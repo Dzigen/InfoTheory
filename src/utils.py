@@ -1,11 +1,10 @@
 import os 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 from PIL import Image
 import torch
 import torchvision.transforms as T
-
-from src.metrics import PSNR
+import torch.nn as nn
 
 TRANSFORM = T.Compose([
     T.Resize(128),
@@ -50,29 +49,36 @@ def images_collate(data):
         "labels": labels
     }
 
-#This function is searching for the JPEG quality factor (QF)
-#which provides neares compression to TargetBPP
-def JPEGRDSingleImage(image,TargetBPP):
-    width, height = image.size
-    realbpp, realpsnr, realQ = 0, 0, 0
-    save_file = 'test.jpeg'
+def generate_noise(hidden, b, device):
+    lb = 0
+    rb = (torch.max(hidden) / pow(2, b + 1))
+    noise = ((lb - rb) * torch.rand(hidden.shape, device=device) + rb)
 
-    for Q in range(101):
-        image.save(save_file, "JPEG", quality=Q)
-        image_dec = Image.open(save_file)
-        bytesize = os.path.getsize(save_file)
-        bpp = bytesize*8/(width*height)
-        psnr = PSNR(image, image_dec, mode=None)
+    return noise
 
-        if abs(realbpp-TargetBPP)>=abs(bpp-TargetBPP):
-            realQ = Q
-    
-    #
-    image.save(save_file, "JPEG", quality=realQ)
-    image_dec = Image.open(save_file)
-    bytesize = os.path.getsize(save_file)
-    realbpp = bytesize*8/(width*height)
-    realpsnr = PSNR(image, image_dec, mode=None)
-    os.remove(save_file)
+def initialize_weights(model, weights_init):
+    for m in model.modules():
+        if not (isinstance(m, nn.Conv2d) or isinstance(m, nn.Embedding) or 
+                isinstance(m, nn.ConvTranspose2d)):
+            continue
+        
+        if weights_init == 'normal':
+            nn.init.normal_(m.weight)
 
-    return image_dec, realQ, realbpp, realpsnr
+        elif weights_init == 'uniform':
+            nn.init.uniform_(m.weight)
+
+        elif weights_init == 'xavier_normal':
+            nn.init.xavier_normal_(m.weight)
+
+        elif weights_init == 'xavier_uniform':
+            nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
+
+        elif weights_init == 'kaiming_uniform':
+            nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
+
+        elif weights_init == 'kaiming_normal':
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+
+        else:
+            raise KeyError
