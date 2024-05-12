@@ -119,7 +119,7 @@ def run(config, model, train_loader, eval_loader, metrics_flag=True):
     ml_train = []
     ml_eval = []
     eval_scores = []
-    best_evalloss = 10e5
+    best_evalloss, best_epoch = 10e5, -1
     device = config['device']
 
     #print("===LEARNING START===")

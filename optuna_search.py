@@ -5,8 +5,8 @@ import gc
 import sys
 torch.autograd.set_detect_anomaly(True)
 
-BASE_DIR = '.'
-#BASE_DIR = '/home/ubuntu/IT'
+#BASE_DIR = '.'
+BASE_DIR = '/home/ubuntu/IT'
 sys.path.insert(0, f"{BASE_DIR}/")
 
 from src.utils import ImagesDataset, DataLoader, images_collate, TRANSFORM
@@ -33,8 +33,7 @@ def objective(trial):
     global train_dataset
     global test_dataset
 
-    # use_maxpool = False
-    # model_type = 'ae'
+    # model_type = 'vqvae'
     # use_noise = True
 
     #
@@ -50,6 +49,8 @@ def objective(trial):
     PARAMS['use_batchnorm'] = trial.suggest_categorical('use_batchnorm', [True, False])
     
     #
+    PARAMS['use_maxpool'] = trial.suggest_categorical('use_maxpool', [True, False])
+
     PARAMS['use_residuals'] = trial.suggest_categorical('use_residuals', [True, False])
     if PARAMS['use_residuals']:
         PARAMS['residual_nlayers'] = trial.suggest_categorical('residual_nlayers', [1, 2])
@@ -63,7 +64,7 @@ def objective(trial):
     PARAMS['reconstruction_loss_weight'] = trial.suggest_float('reconstruction_loss_weight', 1, 20, step=1)
 
     if PARAMS['model_type'] == 'vqvae':
-        PARAMS['codebook_size'] = trial.suggest_int('codebook_size', 20, 80, 5)
+        PARAMS['codebook_size'] = trial.suggest_int('codebook_size', 20, 100, 5)
         PARAMS['codebook_loss_weight'] = trial.suggest_float('codebook_loss_weight', 0.2, 20, step=0.2)
         PARAMS['commitment_loss_weight'] = trial.suggest_float('commitment_loss_weight', 0.01, 20, step=0.01)
         model = VQVAE(config=PARAMS, arch=ARCH_STRUCT).to(PARAMS['device'])
@@ -85,7 +86,7 @@ def objective(trial):
     initialize_weights(model, PARAMS['weights_init'])
 
     ## start model loop ##
-    _, _, best_evallost, best_epoch, _ = run(PARAMS, model, TRAIN_DATALOADER, 
+    _, _, best_evalloss, best_epoch, _ = run(PARAMS, model, TRAIN_DATALOADER, 
                                              TEST_DATALOADER, metrics_flag=PARAMS['compute_metrics'])
 
     del model
@@ -93,7 +94,7 @@ def objective(trial):
     gc.collect()
     torch.cuda.empty_cache()
 
-    return best_evallost, best_epoch
+    return best_evalloss, best_epoch
 
 study = optuna.create_study(directions=['minimize', 'minimize'])
 study.optimize(objective, n_trials=OPTUNA_TRIALS, show_progress_bar=True)

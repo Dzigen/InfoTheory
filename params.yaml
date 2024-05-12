@@ -1,23 +1,23 @@
-task_name: 'log6'
+task_name: 'log8'
 
-batch_size: 4
-epochs: 100 # fixed
-lr: 0.01
-weights_init: 'xavier_uniform' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
-act_fn: 'gelu' # 'relu' | 'leaky' | 'gelu' | 'silu' | 'tanh'
+batch_size: 2
+epochs: 1000 # fixed
+lr: 0.05
+weights_init: 'kaiming_normal' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
+act_fn: 'tanh' # 'relu' | 'leaky' | 'gelu' | 'silu' | 'tanh'
 use_batchnorm: True
 use_residuals: True
-use_maxpool: False # fixed
+use_maxpool: True
 residual_nlayers: 2
 b_quantization: 3
-reconstruction_loss_weight : 1.0
+reconstruction_loss_weight : 2.0
 latent_dim: 16 # fixed
-model_type: 'ae' # fixed
+model_type: 'vqvae' # fixed
 add_noise: True # fixed
 
-codebook_loss_weight : 3.2
-commitment_loss_weight : 12.37
-codebook_size : 70
+codebook_loss_weight : 16.2
+commitment_loss_weight : 14.8
+codebook_size : 85
 
 save_model: True # fixed
 eval_images_to_plot: 5 # fixed

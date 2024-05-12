@@ -6,8 +6,8 @@ torch.manual_seed(0)
 torch.autograd.set_detect_anomaly(True)
 
 
-BASE_DIR = '.'
-#BASE_DIR = '/home/ubuntu/IT'
+#BASE_DIR = '.'
+BASE_DIR = '/home/ubuntu/IT'
 sys.path.insert(0, f'{BASE_DIR}/')
 
 from src.utils import ImagesDataset, DataLoader, images_collate, TRANSFORM
