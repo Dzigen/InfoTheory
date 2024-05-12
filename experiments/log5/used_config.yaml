@@ -1,7 +1,7 @@
 act_fn: leaky
-add_noise: true
+add_noise: false
 b_quantization: 2
-base_dir: ./experiments
+base_dir: .
 batch_size: 4
 codebook_loss_weight: 3.2
 codebook_size: 70
@@ -12,7 +12,7 @@ epochs: 100
 eval_images_to_plot: 5
 latent_dim: 16
 lr: 0.005
-model_type: vqvae
+model_type: ae
 num_workers: 4
 reconstruction_loss_weight: 1.0
 residual_nlayers: 1

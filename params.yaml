@@ -1,28 +1,27 @@
-task_name: ''
+task_name: 'log6'
 
 batch_size: 4
 epochs: 100 # fixed
-lr: 0.005
-weights_init: 'kaiming_uniform' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
-act_fn: 'leaky' # 'relu' | 'leaky' | 'gelu' | 'silu' | 'tanh'
+lr: 0.01
+weights_init: 'xavier_uniform' # 'normal' | 'uniform' | 'xavier_normal' | 'xavier_uniform' | 'kaiming_uniform' | 'kaiming_normal'
+act_fn: 'gelu' # 'relu' | 'leaky' | 'gelu' | 'silu' | 'tanh'
 use_batchnorm: True
 use_residuals: True
-use_maxpool: False # false
-residual_nlayers: 1
-b_quantization: 2
+use_maxpool: False # fixed
+residual_nlayers: 2
+b_quantization: 3
 reconstruction_loss_weight : 1.0
 latent_dim: 16 # fixed
-model_type: 'vae' # fixed
+model_type: 'ae' # fixed
 add_noise: True # fixed
 
 codebook_loss_weight : 3.2
 commitment_loss_weight : 12.37
 codebook_size : 70
 
-save_model: False # fixed
+save_model: True # fixed
 eval_images_to_plot: 5 # fixed
-base_dir: './experiments' # fixed
-num_workers: 2 # fixed
-compute_metrics: False # fixed
+num_workers: 4 # fixed
+compute_metrics: True # fixed
 device: 'cuda'
-root_dir: '.' # fixed
+base_dir: '.' # fixed

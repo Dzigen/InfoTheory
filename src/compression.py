@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 
 from src.architectures.VQVAE import VQVAE
-from src.architectures.VAE import VAE
+from src.architectures.AE import AE
 from src.codec.EntropyCodec import *
 from src.utils import REFORM
 from src.metrics import PSNR
@@ -19,8 +19,8 @@ class Compressor:
 
         if config['model_type'] == 'vqvae':
             self.model = VQVAE(config, arch).to(config['device'])
-        elif config['model_type'] == 'vae':
-            self.model = VAE(config, arch).to(config['device'])
+        elif config['model_type'] == 'ae':
+            self.model = AE(config, arch).to(config['device'])
         
         self.model.load_state_dict(torch.load(ae_model_path))
         self.model.eval()

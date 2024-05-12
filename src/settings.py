@@ -12,8 +12,8 @@ class ParamsConfig:
         return ParamsConfig.yaml.load(open(params_path, encoding="utf-8"))
     
     @staticmethod
-    def get_architecture_params(latent_dim, use_maxpool, base_dir='./'):
-        root_dir = f'{base_dir}data/arch_configs'
+    def get_architecture_params(latent_dim, use_maxpool, base_dir='.'):
+        root_dir = f'{base_dir}/data/arch_configs'
 
         params_path = f'latent{latent_dim}'
         params_path += '_maxpool.yaml' if use_maxpool else '.yaml'
