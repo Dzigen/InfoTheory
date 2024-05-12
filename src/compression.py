@@ -168,7 +168,7 @@ class ArithmeticCoder:
 
 #This function is searching for the JPEG quality factor (QF)
 #which provides neares compression to TargetBPP
-def JPEGRDSingleImage(image,TargetBPP):
+def JPEGRDSingleImage(image, TargetBPP):
     width, height = image.size
     realbpp, realpsnr, realQ = 0, 0, 0
     save_file = 'test.jpeg'
@@ -178,16 +178,14 @@ def JPEGRDSingleImage(image,TargetBPP):
         image_dec = Image.open(save_file)
         bytesize = os.path.getsize(save_file)
         bpp = bytesize*8/(width*height)
-        psnr = PSNR(image, image_dec, mode=None)
 
         if abs(realbpp-TargetBPP)>=abs(bpp-TargetBPP):
             realQ = Q
+            realbpp = bpp
     
     #
     image.save(save_file, "JPEG", quality=realQ)
     image_dec = Image.open(save_file)
-    bytesize = os.path.getsize(save_file)
-    realbpp = bytesize*8/(width*height)
     realpsnr = PSNR(image, image_dec, mode=None)
     os.remove(save_file)
 
